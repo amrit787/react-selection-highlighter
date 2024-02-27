@@ -10,6 +10,7 @@ import { getPopoverElement, getSpanElement } from '../../libs/wrapperElements'
 import DefaultPopover from '../DeafultPopover'
 import { useSelections } from '../../hooks/UseSelection'
 import { SelectionType, WrapperChildrenType } from '../../types'
+import { defaultColor, defaultMinSelectionLength } from '../../constants/constants'
 
 interface BaseHighlighterProps {
   htmlString: string
@@ -26,11 +27,11 @@ interface BaseHighlighterProps {
    * @type {string} - The color code. Default is red.
    */
   highlightColor?: string
-  onClickHighlight?: (selection: SelectionType) => void
+  onClickHighlight?: (selection: SelectionType, event: MouseEvent) => void
   onClick?: MouseEventHandler<HTMLDivElement>
 }
 
-const Highlighter: React.FC<BaseHighlighterProps> = ({
+export const Highlighter: React.FC<BaseHighlighterProps> = ({
   htmlString,
   onClickHighlight,
   disablePopover,
@@ -43,10 +44,11 @@ const Highlighter: React.FC<BaseHighlighterProps> = ({
   selectionWrapperClassName,
   onClick,
 }) => {
-  const { selections, addSelection, removeSelection } = useSelections()
+  const { selections, addSelection, removeSelection, updateSelection } = useSelections()
   const getWrapper = useCallback(
     (selection: SelectionType) => {
-      const span = getSpanElement({ className: selectionWrapperClassName, highlightColor })
+      const backgroundColor = selection.backgroundColor || highlightColor
+      const span = getSpanElement({ className: selectionWrapperClassName, highlightColor: backgroundColor })
       if (!disablePopover) {
         const popover = getPopoverElement({ className: PopoverClassName })
         span.addEventListener('mouseover', () => {
@@ -57,21 +59,34 @@ const Highlighter: React.FC<BaseHighlighterProps> = ({
           popover.style.visibility = 'hidden'
           popover.style.opacity = '0'
         })
-        span.id = selection.id
         popover.id = `pop-${selection.id}`
         span.appendChild(popover)
 
-        span.onclick = () => {
-          if (onClickHighlight) {
-            onClickHighlight(selection)
-          }
-        }
         if (PopoverChildren) {
-          ReactDOM.render(<PopoverChildren selection={selection} removeSelection={removeSelection} />, popover)
+          ReactDOM.render(
+            <PopoverChildren
+              selection={selection}
+              removeSelection={removeSelection}
+              updateSelection={updateSelection}
+            />,
+            popover,
+          )
         } else {
-          ReactDOM.render(<DefaultPopover removeSelection={removeSelection} selection={selection} />, popover)
+          ReactDOM.render(
+            <DefaultPopover
+              removeSelection={removeSelection}
+              selection={selection}
+              updateSelection={updateSelection}
+            />,
+            popover,
+          )
         }
       }
+
+      if (onClickHighlight) {
+        span.onclick = (e) => onClickHighlight(selection, e)
+      }
+      span.id = selection.id
 
       return span
     },
@@ -83,17 +98,26 @@ const Highlighter: React.FC<BaseHighlighterProps> = ({
       onClickHighlight,
       PopoverChildren,
       removeSelection,
+      updateSelection,
     ],
   )
 
   const handleMouseUp = () => {
     const selection = window.getSelection()
     if (!selection) return
+    if (!minSelectionLength) {
+      minSelectionLength = defaultMinSelectionLength
+    }
     if (minSelectionLength && selection.toString().length < minSelectionLength) return
     if (maxSelectionLength && selection.toString().length > maxSelectionLength) return
     const range = selection.getRangeAt(0)
     if (!isHighlightable(range)) return
-    const newSelection: SelectionType = { meta: serializeRange(range), text: range.toString(), id: generateId() }
+    const newSelection: SelectionType = {
+      meta: serializeRange(range),
+      text: range.toString(),
+      id: generateId(),
+      backgroundColor: highlightColor || defaultColor,
+    }
     addSelection(newSelection)
     // addHighlight(range,getWrapper(newSelection))
   }
@@ -115,5 +139,3 @@ const Highlighter: React.FC<BaseHighlighterProps> = ({
     </div>
   )
 }
-
-export default Highlighter

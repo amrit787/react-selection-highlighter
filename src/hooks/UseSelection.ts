@@ -19,6 +19,16 @@ export const useSelections = () => {
       return prev
     })
   }
+  const updateSelection = (id: string, updatedSelection: SelectionType) => {
+    setSelections((prev) => {
+      const index = prev.findIndex((item) => item.id === id)
+
+      if (index !== -1) {
+        return prev.splice(index, 1)
+      }
+      return [...prev, updatedSelection]
+    })
+  }
   const removeSelection = (selection: SelectionType) => {
     setSelections((prev) => {
       const index = prev.findIndex((item) => item.id === selection.id)
@@ -31,5 +41,5 @@ export const useSelections = () => {
     })
   }
 
-  return { selections, setSelections, addSelection, removeSelection }
+  return { selections, setSelections, addSelection, updateSelection, removeSelection }
 }

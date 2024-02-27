@@ -3,6 +3,7 @@ export const getSpanElement = ({ className, highlightColor }: { className?: stri
   if (className) {
     span.className = className
   } else {
+    span.style.userSelect = 'none'
     span.style.backgroundColor = highlightColor || 'red'
   }
 

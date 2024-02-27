@@ -12,10 +12,8 @@ type SelectionProviderType = {
   children: React.ReactNode
 }
 
-const SelectionProvider = ({ children }: SelectionProviderType) => {
+export const SelectionProvider = ({ children }: SelectionProviderType) => {
   const [selections, setSelections] = useState<SelectionType[]>([])
   const value = { selections, setSelections }
   return <selectionsContext.Provider value={value}>{children}</selectionsContext.Provider>
 }
-
-export default SelectionProvider

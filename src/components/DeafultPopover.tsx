@@ -19,8 +19,8 @@ const DefaultPopover: WrapperChildrenType = ({ selection, removeSelection }) => 
       className='popover'
     >
       <p style={{ fontSize: '12px' }}>{selection.text.length} words selected</p>
-      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-        <div onClick={handleDelete} className='cursor-pointer text-red-500'>
+      <div style={{ display: 'flex', minWidth: '150px', gap: '10px', justifyContent: 'center', alignItems: 'center' }}>
+        <div onClick={handleDelete} style={{ color: 'red', cursor: 'pointer', fontSize: 24, fontWeight: 'bold' }}>
           {' '}
           &#x1F5D1;
         </div>
